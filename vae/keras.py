@@ -1,4 +1,5 @@
 # keras implementation of a variational autoencoder
+
 import numpy as np
 
 from keras import backend as K
@@ -6,22 +7,6 @@ from keras.models import Model
 from keras.layers import Input, Conv2D, Dense, Flatten, Reshape
 from keras.datasets import mnist
 
-
-def load_data():
-    """Loads the mnist data and preprocesses it."""
-    # load mnist data
-    (x_train, y_train), (x_test, y_test) = mnist.load_data()
-
-    # we only need the x_train and x_test data (the images)
-    x_train = x_train/255.
-    x_train = np.expand_dims(x_train, -1)
-    x_val = x_test/255.
-    x_val = np.expand_dims(x_val, -1)
-
-    # we'll also return the labels for plotting
-    y = np.concatenate([y_train, y_test])
-
-    return (x_train, x_val), y
 
 def vae_model(n=2, hidden_dim=512):
     """Builds a variational autoencoder
@@ -79,6 +64,7 @@ def vae_model(n=2, hidden_dim=512):
 
     return model, enc_model, dec_model
 
+
 def train_model(n=2, hidden_dim=512, epochs=10, batch_size=32):
     """Trains the VAE model
 
@@ -86,7 +72,7 @@ def train_model(n=2, hidden_dim=512, epochs=10, batch_size=32):
     ------
 
     n : int
-        The dimensionality of the autoencoder
+        The latent-space dimensionality of the autoencoder
 
     hidden_dim: int
         Dimensionality of the hidden layers
@@ -101,17 +87,14 @@ def train_model(n=2, hidden_dim=512, epochs=10, batch_size=32):
     -------
 
     trained: 3-tuple
-        Containes the encoder-decoder model as (encoder-decoder, encoder, decocer).
-    
-    history: Keras History object
-        Contains training information
+        Contains the encoder-decoder model as (encoder-decoder, encoder, decocer).
     """
     # load the data
     (x_train, x_val), _ = load_data()
 
     # load the model
     model, enc_model, dec_model = vae_model(n, hidden_dim)
-    history = model.fit(
+    model.fit(
         x=x_train, y=x_train, 
         epochs=epochs,
         batch_size=batch_size,
@@ -120,5 +103,22 @@ def train_model(n=2, hidden_dim=512, epochs=10, batch_size=32):
 
     trained = (model, enc_model, dec_model)
 
-    return trained, history
+    return trained
 
+# utility functions
+
+def load_data():
+    """Loads the mnist data and preprocesses it."""
+    # load mnist data
+    (x_train, y_train), (x_test, y_test) = mnist.load_data()
+
+    # we only need the x_train and x_test data (the images)
+    x_train = x_train/255.
+    x_train = np.expand_dims(x_train, -1)
+    x_val = x_test/255.
+    x_val = np.expand_dims(x_val, -1)
+
+    # we'll also return the labels for plotting
+    y = np.concatenate([y_train, y_test])
+
+    return (x_train, x_val), y
